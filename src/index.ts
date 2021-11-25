@@ -3,24 +3,18 @@ require('dotenv').config();
 // packages
 import express from 'express';
 
+// routes
+import userRoutes from './routes/user';
+
 // env
 import { PORT } from './env_config';
 
 const app = express();
 
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 
-app.post('/test/:slug', (req, res, next) => {
-  console.log('body:', req.body);
-  console.log('param:', req.params);
-  console.log('query:', req.query);
-  next();
-});
-
-app.use('/', (req, res) => {
-  res.send('Welcome to ' + req.url);
-});
+app.use('/user', userRoutes);
 
 app.listen(PORT, () => {
   console.log('Listening in PORT: ' + PORT);
