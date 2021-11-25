@@ -4,6 +4,7 @@ require('dotenv').config();
 import express from 'express';
 
 // routes
+import postRoutes from './routes/post';
 import userRoutes from './routes/user';
 
 // env
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/user', userRoutes);
+app.use('/post', postRoutes);
 
 app.listen(PORT, () => {
   console.log('Listening in PORT: ' + PORT);
