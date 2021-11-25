@@ -21,6 +21,12 @@ router.get('/', async (req, res) => {
             username: true,
             gender: true
           }
+        },
+        PinnedComment: {
+          select: {
+            opinion: true,
+            Author: { select: { username: true } }
+          }
         }
       },
       orderBy: {
@@ -45,6 +51,16 @@ router.put('/:id', async (req, res) => {
   res.send(
     await prisma.post.delete({
       where: { id: req.params.id }
+    })
+  );
+});
+
+// pin comment
+router.patch('/:id', async (req, res) => {
+  res.send(
+    await prisma.post.update({
+      where: { id: req.params.id },
+      data: { PinnedComment: { connect: { id: req.body.commentId } } }
     })
   );
 });
