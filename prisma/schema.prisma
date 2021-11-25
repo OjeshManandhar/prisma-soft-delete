@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  Post    Post[]
+  Comment Comment[]
+}
+
+model Post {
+  id      String @id @default(cuid())
+  title   String
+  opinion String
+
+  authorId        String
+  pinnedCommentId String? @unique
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  Author        User     @relation(fields: [authorId], references: [id])
+  PinnedComment Comment? @relation("pinned", fields: [pinnedCommentId], references: [id])
+
+  Comment Comment[]
+}
+
+model Comment {
+  id      String  @id @default(cuid())
+  opinion String
+  isReply Boolean
+
+  authorId        String
+  postId          String?
+  parentCommentId String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  Author        User     @relation(fields: [authorId], references: [id])
+  Post          Post?    @relation(fields: [postId], references: [id])
+  ParentComment Comment? @relation("replies", fields: [parentCommentId], references: [id])
+
+  PinnedInPost Post?     @relation("pinned")
+  Replies      Comment[] @relation("replies")
+}
