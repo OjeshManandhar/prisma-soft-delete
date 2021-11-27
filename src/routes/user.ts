@@ -2,7 +2,7 @@
 import { Router } from 'express';
 
 // db
-import prisma from './../prisma';
+import prisma from '../_prisma';
 
 const router = Router();
 
