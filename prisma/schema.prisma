@@ -20,8 +20,8 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  Post    Post[]
-  Comment Comment[]
+  Posts    Post[]
+  Comments Comment[]
 }
 
 model Post {
@@ -39,7 +39,7 @@ model Post {
   Author        User     @relation(fields: [authorId], references: [id])
   PinnedComment Comment? @relation("pinned", fields: [pinnedCommentId], references: [id])
 
-  Comment Comment[]
+  Comments Comment[]
 }
 
 model Comment {
