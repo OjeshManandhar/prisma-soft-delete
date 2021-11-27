@@ -15,8 +15,18 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   res.send(
     await prisma.comment.findMany({
+      where: {
+        isReply: false
+      },
       include: {
-        Author: { select: { username: true } }
+        Author: { select: { username: true } },
+        Replies: {
+          select: {
+            id: true,
+            opinion: true,
+            Author: { select: { username: true } }
+          }
+        }
       }
     })
   );

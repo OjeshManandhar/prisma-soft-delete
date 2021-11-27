@@ -60,7 +60,15 @@ router.patch('/:id', async (req, res) => {
   res.send(
     await prisma.post.update({
       where: { id: req.params.id },
-      data: { PinnedComment: { connect: { id: req.body.commentId } } }
+      data: {
+        PinnedComment: {
+          ...(() => {
+            const commentId = req.body.commentId;
+
+            return commentId ? { connect: { id: commentId } } : { disconnect: true };
+          })()
+        }
+      }
     })
   );
 });
