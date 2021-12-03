@@ -13,15 +13,15 @@ const config: ConfigType = [
         modelName: 'Post',
         field: 'Posts',
         type: RelationType.MANY,
-        delete: true
+        delete: true,
       },
       {
         modelName: 'Comment',
         field: 'Comments',
         type: RelationType.MANY,
-        delete: true
-      }
-    ]
+        delete: true,
+      },
+    ],
   },
   {
     model: 'post',
@@ -32,15 +32,15 @@ const config: ConfigType = [
         modelName: 'Comment',
         field: 'Comments',
         type: RelationType.MANY,
-        delete: true
+        delete: true,
       },
       {
         modelName: 'Comment',
         field: 'PinnedComment',
         type: RelationType.ONE,
-        disconnect: true
-      }
-    ]
+        disconnect: true,
+      },
+    ],
   },
   {
     model: 'comment',
@@ -51,10 +51,10 @@ const config: ConfigType = [
         modelName: 'Comment',
         field: 'Replies',
         type: RelationType.MANY,
-        delete: true
-      }
-    ]
-  }
+        delete: true,
+      },
+    ],
+  },
 ];
 
 const constants = {
@@ -68,6 +68,7 @@ type DeletedExtension = {
 };
 
 `,
+
   utils: `/**
  * =========================
  * utils
@@ -92,6 +93,7 @@ function bringChildKeysToParent(parent: object) {
 }
 
 `,
+
   updateFieldValuesComment: `/**
  * =========================
  * update field values
@@ -99,6 +101,7 @@ function bringChildKeysToParent(parent: object) {
  */
 
 `,
+
   export: {
     start: `/**
  * =========================
@@ -109,10 +112,11 @@ function bringChildKeysToParent(parent: object) {
 export default {
   ...p,
   `,
+
     end: `
 };
-  `
-  }
+  `,
+  },
 };
 
 function generate() {
@@ -138,13 +142,13 @@ function generate() {
 
 function update${modelName}WhereInput(
   where?: Prisma.${modelName}WhereInput,
-  includeDeleted: Boolean = false
 ): Prisma.${modelName}WhereInput | undefined {
   if (!where) return;
 
-  const newWhere: Prisma.${modelName}WhereInput = { ...where };
-
-  if (!includeDeleted) newWhere.deletedAt = null;
+  const newWhere: Prisma.${modelName}WhereInput = {
+    ...where,
+    deletedAt: null,
+  };
 
   return newWhere;
 }
@@ -168,7 +172,7 @@ function update${modelName}WhereInput(
 
       return p.${model}.findFirst({
         ...args,
-        where: update${modelName}WhereUniqueInput(args.where)
+        where: update${modelName}WhereUniqueInput(args.where),
       });
     },
     findFirst(_args: Prisma.${modelName}FindFirstArgs & DeletedExtension) {
@@ -180,7 +184,7 @@ function update${modelName}WhereInput(
 
       return p.${model}.findFirst({
         ...args,
-        where: update${modelName}WhereInput(args.where)
+        where: update${modelName}WhereInput(args.where),
       });
     },
     findMany(_args: Prisma.${modelName}FindManyArgs & DeletedExtension) {
@@ -192,7 +196,7 @@ function update${modelName}WhereInput(
 
       return p.${model}.findMany({
         ...args,
-        where: update${modelName}WhereInput(args.where)
+        where: update${modelName}WhereInput(args.where),
       });
     }
   },

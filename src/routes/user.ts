@@ -23,11 +23,18 @@ router.get('/:username', async (req, res) => {
   res.send(
     await prisma.user.findMany({
       where: {
-        username: { contains: username }
+        OR: [
+          {
+            id: '2bd34ec9-54ea-4bdf-ac2e-6cbec6bfe944',
+          },
+          {
+            username: { contains: username },
+          },
+        ],
       },
       orderBy: { username: 'asc' },
-      includeDeleted: true
-    })
+      includeDeleted: !true,
+    }),
   );
 });
 
@@ -36,8 +43,8 @@ router.put('/:id', async (req, res) => {
   res.send(
     await prisma.user.update({
       where: { id: req.params.id },
-      data: req.body
-    })
+      data: req.body,
+    }),
   );
 });
 

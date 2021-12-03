@@ -3,7 +3,7 @@ import prisma from './../_prisma';
 
 export enum RelationType {
   ONE = 'ONE',
-  MANY = 'MANY'
+  MANY = 'MANY',
 }
 
 type RelationDescription =

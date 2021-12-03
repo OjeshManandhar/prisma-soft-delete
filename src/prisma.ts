@@ -37,7 +37,7 @@ function bringChildKeysToParent(parent: object) {
  */
 
 function updateUserWhereUniqueInput(
-  uniqueWhere: Prisma.UserWhereUniqueInput
+  uniqueWhere: Prisma.UserWhereUniqueInput,
 ): Prisma.UserWhereInput {
   const newUniqueWhere: Prisma.UserWhereInput =
     bringChildKeysToParent(uniqueWhere);
@@ -49,19 +49,19 @@ function updateUserWhereUniqueInput(
 
 function updateUserWhereInput(
   where?: Prisma.UserWhereInput,
-  includeDeleted: Boolean = false
 ): Prisma.UserWhereInput | undefined {
   if (!where) return;
 
-  const newWhere: Prisma.UserWhereInput = { ...where };
-
-  if (!includeDeleted) newWhere.deletedAt = null;
+  const newWhere: Prisma.UserWhereInput = {
+    ...where,
+    deletedAt: null,
+  };
 
   return newWhere;
 }
 
 function updatePostWhereUniqueInput(
-  uniqueWhere: Prisma.PostWhereUniqueInput
+  uniqueWhere: Prisma.PostWhereUniqueInput,
 ): Prisma.PostWhereInput {
   const newUniqueWhere: Prisma.PostWhereInput =
     bringChildKeysToParent(uniqueWhere);
@@ -73,19 +73,19 @@ function updatePostWhereUniqueInput(
 
 function updatePostWhereInput(
   where?: Prisma.PostWhereInput,
-  includeDeleted: Boolean = false
 ): Prisma.PostWhereInput | undefined {
   if (!where) return;
 
-  const newWhere: Prisma.PostWhereInput = { ...where };
-
-  if (!includeDeleted) newWhere.deletedAt = null;
+  const newWhere: Prisma.PostWhereInput = {
+    ...where,
+    deletedAt: null,
+  };
 
   return newWhere;
 }
 
 function updateCommentWhereUniqueInput(
-  uniqueWhere: Prisma.CommentWhereUniqueInput
+  uniqueWhere: Prisma.CommentWhereUniqueInput,
 ): Prisma.CommentWhereInput {
   const newUniqueWhere: Prisma.CommentWhereInput =
     bringChildKeysToParent(uniqueWhere);
@@ -97,13 +97,13 @@ function updateCommentWhereUniqueInput(
 
 function updateCommentWhereInput(
   where?: Prisma.CommentWhereInput,
-  includeDeleted: Boolean = false
 ): Prisma.CommentWhereInput | undefined {
   if (!where) return;
 
-  const newWhere: Prisma.CommentWhereInput = { ...where };
-
-  if (!includeDeleted) newWhere.deletedAt = null;
+  const newWhere: Prisma.CommentWhereInput = {
+    ...where,
+    deletedAt: null,
+  };
 
   return newWhere;
 }
@@ -131,7 +131,7 @@ export default {
 
       return p.user.findFirst({
         ...args,
-        where: updateUserWhereUniqueInput(args.where)
+        where: updateUserWhereUniqueInput(args.where),
       });
     },
     findFirst(_args: Prisma.UserFindFirstArgs & DeletedExtension) {
@@ -143,7 +143,7 @@ export default {
 
       return p.user.findFirst({
         ...args,
-        where: updateUserWhereInput(args.where)
+        where: updateUserWhereInput(args.where),
       });
     },
     findMany(_args: Prisma.UserFindManyArgs & DeletedExtension) {
@@ -155,9 +155,9 @@ export default {
 
       return p.user.findMany({
         ...args,
-        where: updateUserWhereInput(args.where)
+        where: updateUserWhereInput(args.where),
       });
-    }
+    },
   },
   post: {
     ...p.post,
@@ -174,7 +174,7 @@ export default {
 
       return p.post.findFirst({
         ...args,
-        where: updatePostWhereUniqueInput(args.where)
+        where: updatePostWhereUniqueInput(args.where),
       });
     },
     findFirst(_args: Prisma.PostFindFirstArgs & DeletedExtension) {
@@ -186,7 +186,7 @@ export default {
 
       return p.post.findFirst({
         ...args,
-        where: updatePostWhereInput(args.where)
+        where: updatePostWhereInput(args.where),
       });
     },
     findMany(_args: Prisma.PostFindManyArgs & DeletedExtension) {
@@ -198,9 +198,9 @@ export default {
 
       return p.post.findMany({
         ...args,
-        where: updatePostWhereInput(args.where)
+        where: updatePostWhereInput(args.where),
       });
-    }
+    },
   },
   comment: {
     ...p.comment,
@@ -217,7 +217,7 @@ export default {
 
       return p.comment.findFirst({
         ...args,
-        where: updateCommentWhereUniqueInput(args.where)
+        where: updateCommentWhereUniqueInput(args.where),
       });
     },
     findFirst(_args: Prisma.CommentFindFirstArgs & DeletedExtension) {
@@ -229,7 +229,7 @@ export default {
 
       return p.comment.findFirst({
         ...args,
-        where: updateCommentWhereInput(args.where)
+        where: updateCommentWhereInput(args.where),
       });
     },
     findMany(_args: Prisma.CommentFindManyArgs & DeletedExtension) {
@@ -241,8 +241,8 @@ export default {
 
       return p.comment.findMany({
         ...args,
-        where: updateCommentWhereInput(args.where)
+        where: updateCommentWhereInput(args.where),
       });
-    }
-  }
+    },
+  },
 };

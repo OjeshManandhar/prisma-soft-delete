@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
   res.send(
     await prisma.comment.findMany({
       where: {
-        isReply: false
+        isReply: false,
       },
       include: {
         Author: { select: { username: true } },
@@ -24,11 +24,11 @@ router.get('/', async (req, res) => {
           select: {
             id: true,
             opinion: true,
-            Author: { select: { username: true } }
-          }
-        }
-      }
-    })
+            Author: { select: { username: true } },
+          },
+        },
+      },
+    }),
   );
 });
 
@@ -45,13 +45,13 @@ router.get('/:opinion', async (req, res) => {
           select: {
             id: true,
             opinion: true,
-            Author: { select: { username: true } }
-          }
-        }
+            Author: { select: { username: true } },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
-      includeDeleted: !true
-    })
+      includeDeleted: !true,
+    }),
   );
 });
 
@@ -60,8 +60,8 @@ router.put('/:id', async (req, res) => {
   res.send(
     await prisma.comment.update({
       where: { id: req.params.id },
-      data: req.body
-    })
+      data: req.body,
+    }),
   );
 });
 
@@ -69,8 +69,8 @@ router.put('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   res.send(
     await prisma.comment.delete({
-      where: { id: req.params.id }
-    })
+      where: { id: req.params.id },
+    }),
   );
 });
 

@@ -19,20 +19,20 @@ router.get('/', async (req, res) => {
         Author: {
           select: {
             username: true,
-            gender: true
-          }
+            gender: true,
+          },
         },
         PinnedComment: {
           select: {
             opinion: true,
-            Author: { select: { username: true } }
-          }
-        }
+            Author: { select: { username: true } },
+          },
+        },
       },
       orderBy: {
-        createdAt: 'asc'
-      }
-    })
+        createdAt: 'asc',
+      },
+    }),
   );
 });
 
@@ -47,18 +47,18 @@ router.get('/:opinion', async (req, res) => {
         Author: {
           select: {
             username: true,
-            gender: true
-          }
+            gender: true,
+          },
         },
         PinnedComment: {
           select: {
             opinion: true,
-            Author: { select: { username: true } }
-          }
-        }
+            Author: { select: { username: true } },
+          },
+        },
       },
-      includeDeleted: true
-    })
+      includeDeleted: true,
+    }),
   );
 });
 
@@ -67,8 +67,8 @@ router.put('/:id', async (req, res) => {
   res.send(
     await prisma.post.update({
       where: { id: req.params.id },
-      data: req.body
-    })
+      data: req.body,
+    }),
   );
 });
 
@@ -76,8 +76,8 @@ router.put('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   res.send(
     await prisma.post.delete({
-      where: { id: req.params.id }
-    })
+      where: { id: req.params.id },
+    }),
   );
 });
 
@@ -94,10 +94,10 @@ router.patch('/:id', async (req, res) => {
             return commentId
               ? { connect: { id: commentId } }
               : { disconnect: true };
-          })()
-        }
-      }
-    })
+          })(),
+        },
+      },
+    }),
   );
 });
 
