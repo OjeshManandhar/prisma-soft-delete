@@ -52,7 +52,7 @@ model Comment {
   is      String
 
   authorId        String
-  postId          String?
+  postId          String
   parentCommentId String?
 
   createdAt DateTime  @default(now())
@@ -60,7 +60,7 @@ model Comment {
   deletedAt DateTime?
 
   Author        User     @relation(fields: [authorId], references: [id])
-  Post          Post?    @relation(fields: [postId], references: [id])
+  Post          Post     @relation(fields: [postId], references: [id])
   ParentComment Comment? @relation("replies", fields: [parentCommentId], references: [id])
 
   PinnedInPost Post?     @relation("pinned")
