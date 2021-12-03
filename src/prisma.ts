@@ -97,9 +97,9 @@ function updateUserWhereUniqueInput(
 }
 
 function updateUserWhereInput(
-  where: Prisma.UserWhereInput,
+  where?: Prisma.UserWhereInput,
   deleted: Boolean = false
-): Prisma.UserWhereInput {
+): Prisma.UserWhereInput | undefined {
   // const newWhere: Prisma.UserWhereInput = {
   //   ...where,
   //   ...(() => (deleted ? {} : { deletedAt: null }))(),
@@ -109,7 +109,33 @@ function updateUserWhereInput(
   //     : {}
   // };
 
+  if (!where) return;
+
   const newWhere: Prisma.UserWhereInput = { ...where };
+
+  if (!deleted) newWhere.deletedAt = null;
+
+  return newWhere;
+}
+
+function updatePostWhereUniqueInput(
+  uniqueWhere: Prisma.PostWhereUniqueInput
+): Prisma.PostWhereInput {
+  const newUniqueWhere: Prisma.PostWhereInput =
+    bringChildKeysToParent(uniqueWhere);
+
+  newUniqueWhere.deletedAt = null;
+
+  return newUniqueWhere;
+}
+
+function updatePostWhereInput(
+  where?: Prisma.PostWhereInput,
+  deleted: Boolean = false
+): Prisma.PostWhereInput | undefined {
+  if (!where) return;
+
+  const newWhere: Prisma.PostWhereInput = { ...where };
 
   if (!deleted) newWhere.deletedAt = null;
 
@@ -151,7 +177,7 @@ export default {
 
       return p.user.findFirst({
         ...args,
-        where: args.where ? updateUserWhereInput(args.where) : undefined
+        where: updateUserWhereInput(args.where)
       });
     },
     findMany(_args: Prisma.UserFindManyArgs & DeletedExtension) {
@@ -163,7 +189,54 @@ export default {
 
       return p.user.findMany({
         ...args,
-        where: args.where ? updateUserWhereInput(args.where) : undefined
+        where: updateUserWhereInput(args.where)
+      });
+    }
+  },
+  post: {
+    ...p.post,
+    findUnique(_args: Prisma.PostFindUniqueArgs & DeletedExtension) {
+      const { deleted, ...args } = _args;
+
+      if (deleted) {
+        return p.post.findUnique(args);
+      }
+
+      if (Object.keys(args.where).length !== 1) {
+        throw new Error('Please give only one argument for findUnique');
+      }
+
+      return p.post.findFirst({
+        ...args,
+        where: updatePostWhereUniqueInput(args.where)
+      });
+    },
+    findFirst(_args: Prisma.PostFindFirstArgs & DeletedExtension) {
+      const { deleted, ...args } = _args;
+
+      if (deleted) {
+        return p.post.findFirst(args);
+      }
+
+      console.log('updatePostWhereInput:', updatePostWhereInput(args.where));
+
+      return p.post.findFirst({
+        ...args,
+        where: updatePostWhereInput(args.where)
+      });
+    },
+    findMany(_args: Prisma.PostFindManyArgs & DeletedExtension) {
+      const { deleted, ...args } = _args;
+
+      if (deleted) {
+        return p.post.findMany(args);
+      }
+
+      console.log('updatePostWhereInput:', updatePostWhereInput(args.where));
+
+      return p.post.findMany({
+        ...args,
+        where: updatePostWhereInput(args.where)
       });
     }
   }

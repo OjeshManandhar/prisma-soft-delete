@@ -2,7 +2,7 @@
 import { Router } from 'express';
 
 // db
-import prisma from '../_prisma';
+import prisma from '../prisma';
 
 const router = Router();
 
@@ -31,6 +31,31 @@ router.get('/', async (req, res) => {
       },
       orderBy: {
         createdAt: 'asc'
+      }
+    })
+  );
+});
+
+// find
+router.get('/:opinion', async (req, res) => {
+  const opinion = req.params.opinion;
+
+  res.send(
+    await prisma.post.findMany({
+      where: { opinion: { contains: opinion } },
+      include: {
+        Author: {
+          select: {
+            username: true,
+            gender: true
+          }
+        },
+        PinnedComment: {
+          select: {
+            opinion: true,
+            Author: { select: { username: true } }
+          }
+        }
       }
     })
   );
@@ -65,7 +90,9 @@ router.patch('/:id', async (req, res) => {
           ...(() => {
             const commentId = req.body.commentId;
 
-            return commentId ? { connect: { id: commentId } } : { disconnect: true };
+            return commentId
+              ? { connect: { id: commentId } }
+              : { disconnect: true };
           })()
         }
       }
