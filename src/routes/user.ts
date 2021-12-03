@@ -21,8 +21,12 @@ router.get('/:username', async (req, res) => {
   const username = req.params.username;
 
   res.send(
-    await prisma.user.findUnique({
-      where: { username }
+    await prisma.user.findMany({
+      where: {
+        username: { contains: username }
+      },
+      orderBy: { username: 'asc' },
+      deleted: true
     })
   );
 });

@@ -5,12 +5,6 @@ type DeletedExtension = {
   deleted?: Boolean;
 };
 
-const ModelNameToPrismaKey: { [index: string]: keyof typeof p } = {
-  User: 'user',
-  Post: 'post',
-  Comment: 'comment'
-};
-
 /*
 enum RelationType {
   ONE = 'ONE',
@@ -20,33 +14,55 @@ enum RelationType {
 const config = [
   {
     model: 'User',
+    modelName: 'user',
     field: 'deletedAt',
-    delete: [
-      { model: 'Post', relation: RelationType.MANY, field: 'Posts' },
-      { model: 'Comment', relation: RelationType.MANY, field: 'Comments' }
+    relations: [
+      { model: 'Post', type: RelationType.MANY, field: 'Posts', delete: true },
+      {
+        model: 'Comment',
+        type: RelationType.MANY,
+        field: 'Comments',
+        delete: true
+      }
     ]
   },
   {
     model: 'Post',
+    modelName: 'post',
     field: 'deletedAt',
-    delete: [
-      { model: 'Comment', relation: RelationType.MANY, field: 'Comments' }
-    ],
-    disconnect: [
-      { model: 'Comment', realtion: RelationType.ONE, field: 'PinnedComment' }
+    relations: [
+      {
+        model: 'Comment',
+        relation: RelationType.MANY,
+        field: 'Comments',
+        delete: true
+      },
+      {
+        model: 'Comment',
+        realtion: RelationType.ONE,
+        field: 'PinnedComment',
+        disconnect: true
+      }
     ]
   },
   {
     model: 'Comment',
+    modelName: 'comment',
     field: 'deletedAt',
-    delete: [
+    relations: [
       { model: 'Comment', relation: RelationType.MANY, field: 'Replies' }
     ]
   }
 ];
 */
 
-function bringToParent(parent: object) {
+/**
+ * =========================
+ * utils
+ * =========================
+ */
+
+function bringChildKeysToParent(parent: object) {
   const newParent = {};
 
   for (const _key in parent) {
@@ -56,36 +72,55 @@ function bringToParent(parent: object) {
     if (typeof value !== 'object') {
       newParent[key] = parent[key];
     } else {
-      Object.assign(newParent, bringToParent(parent[key]));
+      Object.assign(newParent, bringChildKeysToParent(parent[key]));
     }
   }
 
   return newParent;
 }
 
-function updateUserWhereUniqueInput(uniqueWhere: Prisma.UserWhereUniqueInput) {
-  const newUniqueWhere: Prisma.UserWhereInput = bringToParent(uniqueWhere);
+/**
+ * =========================
+ * update field values
+ * =========================
+ */
+
+function updateUserWhereUniqueInput(
+  uniqueWhere: Prisma.UserWhereUniqueInput
+): Prisma.UserWhereInput {
+  const newUniqueWhere: Prisma.UserWhereInput =
+    bringChildKeysToParent(uniqueWhere);
 
   newUniqueWhere.deletedAt = null;
 
   return newUniqueWhere;
 }
 
-// function updateUserWhereInput(
-//   where: Prisma.UserWhereInput,
-//   deleted: Boolean = false
-// ): Prisma.UserWhereInput {
-//   const newWhere: Prisma.UserWhereInput = {
-//     ...where,
-//     ...(() => (deleted ? {} : { deletedAt: null }))(),
-//     Posts: where.Posts ? updatePostWhereInput(where.Posts, deleted) : {},
-//     Comments: where.Comments
-//       ? updateCommentWhereInput(where.Posts, deleted)
-//       : {}
-//   };
+function updateUserWhereInput(
+  where: Prisma.UserWhereInput,
+  deleted: Boolean = false
+): Prisma.UserWhereInput {
+  // const newWhere: Prisma.UserWhereInput = {
+  //   ...where,
+  //   ...(() => (deleted ? {} : { deletedAt: null }))(),
+  //   Posts: where.Posts ? updatePostWhereInput(where.Posts, deleted) : {},
+  //   Comments: where.Comments
+  //     ? updateCommentWhereInput(where.Posts, deleted)
+  //     : {}
+  // };
 
-//   return newWhere;
-// }
+  const newWhere: Prisma.UserWhereInput = { ...where };
+
+  if (!deleted) newWhere.deletedAt = null;
+
+  return newWhere;
+}
+
+/**
+ * =========================
+ * update field operations
+ * =========================
+ */
 
 export default {
   ...p,
@@ -107,35 +142,29 @@ export default {
         where: updateUserWhereUniqueInput(args.where)
       });
     },
-    // findFirst(_args: Prisma.UserFindFirstArgs & DeletedExtension) {
-    //   const args = _args as Prisma.UserFindFirstArgs;
+    findFirst(_args: Prisma.UserFindFirstArgs & DeletedExtension) {
+      const { deleted, ...args } = _args;
 
-    //   if (_args.deleted) {
-    //     return p.user.findFirst(args);
-    //   }
+      if (deleted) {
+        return p.user.findFirst(args);
+      }
 
-    //   return p.user.findFirst({
-    //     ...args,
-    //     where: {
-    //       ...args.where,
-    //       deletedAt: null
-    //     }
-    //   });
-    // },
-    // findMany(_args: Prisma.UserFindManyArgs & DeletedExtension) {
-    //   const args = _args as Prisma.UserFindManyArgs;
+      return p.user.findFirst({
+        ...args,
+        where: args.where ? updateUserWhereInput(args.where) : undefined
+      });
+    },
+    findMany(_args: Prisma.UserFindManyArgs & DeletedExtension) {
+      const { deleted, ...args } = _args;
 
-    //   if (_args.deleted) {
-    //     return p.user.findMany(args);
-    //   }
+      if (deleted) {
+        return p.user.findMany(args);
+      }
 
-    //   return p.user.findMany({
-    //     ...args,
-    //     where: {
-    //       ...args.where,
-    //       deletedAt: null
-    //     }
-    //   });
-    // }
+      return p.user.findMany({
+        ...args,
+        where: args.where ? updateUserWhereInput(args.where) : undefined
+      });
+    }
   }
 };
