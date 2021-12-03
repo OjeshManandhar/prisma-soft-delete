@@ -2,7 +2,7 @@
 import { Router } from 'express';
 
 // db
-import prisma from '../_prisma';
+import prisma from '../prisma';
 
 const router = Router();
 
@@ -28,6 +28,29 @@ router.get('/', async (req, res) => {
           }
         }
       }
+    })
+  );
+});
+
+// find
+router.get('/:opinion', async (req, res) => {
+  const opinion = req.params.opinion;
+
+  res.send(
+    await prisma.comment.findMany({
+      where: { opinion: { contains: opinion } },
+      include: {
+        Author: { select: { username: true } },
+        Replies: {
+          select: {
+            id: true,
+            opinion: true,
+            Author: { select: { username: true } }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      includeDeleted: !true
     })
   );
 });

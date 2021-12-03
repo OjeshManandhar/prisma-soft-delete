@@ -26,7 +26,7 @@ router.get('/:username', async (req, res) => {
         username: { contains: username }
       },
       orderBy: { username: 'asc' },
-      deleted: true
+      includeDeleted: true
     })
   );
 });

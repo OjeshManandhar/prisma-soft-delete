@@ -56,7 +56,8 @@ router.get('/:opinion', async (req, res) => {
             Author: { select: { username: true } }
           }
         }
-      }
+      },
+      includeDeleted: true
     })
   );
 });
