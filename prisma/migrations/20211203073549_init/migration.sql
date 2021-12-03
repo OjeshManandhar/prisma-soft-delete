@@ -2,6 +2,7 @@
 CREATE TABLE "User" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "username" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "gender" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
@@ -40,6 +41,9 @@ CREATE TABLE "Comment" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_name_gender_key" ON "User"("name", "gender");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Post_pinnedCommentId_key" ON "Post"("pinnedCommentId");
