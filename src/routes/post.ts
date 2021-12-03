@@ -42,7 +42,16 @@ router.get('/:opinion', async (req, res) => {
 
   res.send(
     await prisma.post.findMany({
-      where: { opinion: { contains: opinion } },
+      where: {
+        // opinion: { contains: opinion },
+        // PinnedComment: {
+        //   is: { is: 'COMMENT' },
+        //   // is: 'COMMENT',
+        // },
+        // Author: {
+        //   username: { contains: opinion },
+        // },
+      },
       include: {
         Author: {
           select: {
@@ -50,14 +59,39 @@ router.get('/:opinion', async (req, res) => {
             gender: true,
           },
         },
+        Comments: {
+          where: {
+            isReply: false,
+          },
+          select: {
+            opinion: true,
+            deletedAt: true,
+            Author: { select: { username: true } },
+            Replies: {
+              select: {
+                opinion: true,
+                deletedAt: true,
+                Author: { select: { username: true } },
+              },
+            },
+          },
+        },
         PinnedComment: {
           select: {
             opinion: true,
+            deletedAt: true,
             Author: { select: { username: true } },
+            Replies: {
+              select: {
+                opinion: true,
+                deletedAt: true,
+                Author: { select: { username: true } },
+              },
+            },
           },
         },
       },
-      includeDeleted: false,
+      includeDeleted: !true,
     }),
   );
 });
