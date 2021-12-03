@@ -15,18 +15,18 @@ type DeletedExtension = {
 
 function bringChildKeysToParent(parent: object) {
   const newParent = {};
-
+  
   for (const _key in parent) {
     const key = _key as keyof typeof parent;
     const value = parent[key];
-
+    
     if (typeof value !== 'object') {
       newParent[key] = parent[key];
     } else {
       Object.assign(newParent, bringChildKeysToParent(parent[key]));
     }
   }
-
+  
   return newParent;
 }
 
@@ -116,7 +116,7 @@ function updateCommentWhereInput(
 
 export default {
   ...p,
-  user: {
+    user: {
     ...p.user,
     findUnique(_args: Prisma.UserFindUniqueArgs & DeletedExtension) {
       const { includeDeleted, ...args } = _args;
@@ -159,7 +159,7 @@ export default {
       });
     }
   },
-  post: {
+      post: {
     ...p.post,
     findUnique(_args: Prisma.PostFindUniqueArgs & DeletedExtension) {
       const { includeDeleted, ...args } = _args;
@@ -202,7 +202,7 @@ export default {
       });
     }
   },
-  comment: {
+      comment: {
     ...p.comment,
     findUnique(_args: Prisma.CommentFindUniqueArgs & DeletedExtension) {
       const { includeDeleted, ...args } = _args;
@@ -244,5 +244,7 @@ export default {
         where: updateCommentWhereInput(args.where)
       });
     }
-  }
+  },
+    
 };
+  
