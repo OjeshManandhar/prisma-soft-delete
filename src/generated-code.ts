@@ -7,28 +7,32 @@ type DeletedExtension = {
   includeDeleted?: Boolean;
 };
 
-/**
- * =========================
- * utils
- * =========================
- */
-
-function bringChildKeysToParent(parent: object) {
-  const newParent = {};
+  /**
+   * =========================
+   * utils
+   * =========================
+   */
   
-  for (const _key in parent) {
-    const key = _key as keyof typeof parent;
-    const value = parent[key];
-    
-    if (typeof value !== 'object') {
-      newParent[key] = parent[key];
-    } else {
-      Object.assign(newParent, bringChildKeysToParent(parent[key]));
-    }
+  function objectHasKeys(obj: object | null | undefined): Boolean {
+    return Boolean(obj && Object.keys(obj).length !== 0);
   }
   
-  return newParent;
-}
+  function bringChildKeysToParent(parent: object) {
+    const newParent = {};
+  
+    for (const _key in parent) {
+      const key = _key as keyof typeof parent;
+      const value = parent[key];
+  
+      if (typeof value !== 'object') {
+        newParent[key] = parent[key];
+      } else {
+        Object.assign(newParent, bringChildKeysToParent(parent[key]));
+      }
+    }
+  
+    return newParent;
+  }
 
 /**
  * =========================
@@ -37,7 +41,7 @@ function bringChildKeysToParent(parent: object) {
  */
 
 function updateUserWhereUniqueInput(
-  uniqueWhere: Prisma.UserWhereUniqueInput
+  uniqueWhere: Prisma.UserWhereUniqueInput,
 ): Prisma.UserWhereInput {
   const newUniqueWhere: Prisma.UserWhereInput =
     bringChildKeysToParent(uniqueWhere);
@@ -50,10 +54,12 @@ function updateUserWhereUniqueInput(
 function updateUserWhereInput(
   where?: Prisma.UserWhereInput,
 ): Prisma.UserWhereInput | undefined {
-  if (!where) return;
+  if (!objectHasKeys(where)) return { deletedAt: null };
 
   const newWhere: Prisma.UserWhereInput = {
     ...where,
+    Posts: updatePostListRelationFilter(where?.Posts),
+    Comments: updateCommentListRelationFilter(where?.Comments),
     deletedAt: null,
   };
 
@@ -61,7 +67,7 @@ function updateUserWhereInput(
 }
 
 function updatePostWhereUniqueInput(
-  uniqueWhere: Prisma.PostWhereUniqueInput
+  uniqueWhere: Prisma.PostWhereUniqueInput,
 ): Prisma.PostWhereInput {
   const newUniqueWhere: Prisma.PostWhereInput =
     bringChildKeysToParent(uniqueWhere);
@@ -74,18 +80,38 @@ function updatePostWhereUniqueInput(
 function updatePostWhereInput(
   where?: Prisma.PostWhereInput,
 ): Prisma.PostWhereInput | undefined {
-  if (!where) return;
+  if (!objectHasKeys(where)) return { deletedAt: null };
 
   const newWhere: Prisma.PostWhereInput = {
     ...where,
+    Comments: updateCommentListRelationFilter(where?.Comments),
     deletedAt: null,
   };
 
   return newWhere;
 }
 
+function updatePostListRelationFilter(
+  listRelationFilter?: Prisma.PostListRelationFilter,
+): Prisma.PostListRelationFilter | undefined {
+  if (!objectHasKeys(listRelationFilter)) return;
+
+  const newListRelationFilter: Prisma.PostListRelationFilter = {};
+
+  for (const _key in listRelationFilter) {
+    const key = _key as keyof typeof listRelationFilter;
+    const value = listRelationFilter[key];
+
+    if (objectHasKeys(value)) {
+      newListRelationFilter[key] = updatePostWhereInput(value);
+    }
+  }
+
+  return newListRelationFilter;
+}
+
 function updateCommentWhereUniqueInput(
-  uniqueWhere: Prisma.CommentWhereUniqueInput
+  uniqueWhere: Prisma.CommentWhereUniqueInput,
 ): Prisma.CommentWhereInput {
   const newUniqueWhere: Prisma.CommentWhereInput =
     bringChildKeysToParent(uniqueWhere);
@@ -98,14 +124,34 @@ function updateCommentWhereUniqueInput(
 function updateCommentWhereInput(
   where?: Prisma.CommentWhereInput,
 ): Prisma.CommentWhereInput | undefined {
-  if (!where) return;
+  if (!objectHasKeys(where)) return { deletedAt: null };
 
   const newWhere: Prisma.CommentWhereInput = {
     ...where,
+    Replies: updateCommentListRelationFilter(where?.Replies),
     deletedAt: null,
   };
 
   return newWhere;
+}
+
+function updateCommentListRelationFilter(
+  listRelationFilter?: Prisma.CommentListRelationFilter,
+): Prisma.CommentListRelationFilter | undefined {
+  if (!objectHasKeys(listRelationFilter)) return;
+
+  const newListRelationFilter: Prisma.CommentListRelationFilter = {};
+
+  for (const _key in listRelationFilter) {
+    const key = _key as keyof typeof listRelationFilter;
+    const value = listRelationFilter[key];
+
+    if (objectHasKeys(value)) {
+      newListRelationFilter[key] = updateCommentWhereInput(value);
+    }
+  }
+
+  return newListRelationFilter;
 }
 
 /**

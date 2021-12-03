@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { resourceLimits } from 'worker_threads';
 
 // types
 import { ConfigType, RelationType } from './types';
@@ -69,28 +70,32 @@ type DeletedExtension = {
 
 `,
 
-  utils: `/**
- * =========================
- * utils
- * =========================
- */
-
-function bringChildKeysToParent(parent: object) {
-  const newParent = {};
+  utils: `  /**
+   * =========================
+   * utils
+   * =========================
+   */
   
-  for (const _key in parent) {
-    const key = _key as keyof typeof parent;
-    const value = parent[key];
-    
-    if (typeof value !== 'object') {
-      newParent[key] = parent[key];
-    } else {
-      Object.assign(newParent, bringChildKeysToParent(parent[key]));
-    }
+  function objectHasKeys(obj: object | null | undefined): Boolean {
+    return Boolean(obj && Object.keys(obj).length !== 0);
   }
   
-  return newParent;
-}
+  function bringChildKeysToParent(parent: object) {
+    const newParent = {};
+  
+    for (const _key in parent) {
+      const key = _key as keyof typeof parent;
+      const value = parent[key];
+  
+      if (typeof value !== 'object') {
+        newParent[key] = parent[key];
+      } else {
+        Object.assign(newParent, bringChildKeysToParent(parent[key]));
+      }
+    }
+  
+    return newParent;
+  }
 
 `,
 
@@ -119,23 +124,40 @@ export default {
   },
 };
 
+function doesSomeModelHasThisModelInRelations(
+  modelName: string,
+  type: RelationType,
+) {
+  for (const model of config) {
+    if (
+      model.relations.find(
+        rel => rel.modelName === modelName && rel.type === type,
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function generate() {
   let generatedFileContent = constants.head + constants.utils;
   let updateFieldValueFunctions = constants.updateFieldValuesComment;
   let updateFieldOperations = '';
 
   for (const modelDescription of config) {
-    const { model, modelName } = modelDescription;
+    const { model, modelName, field, relations } = modelDescription;
 
     updateFieldValueFunctions =
       updateFieldValueFunctions +
       `function update${modelName}WhereUniqueInput(
-  uniqueWhere: Prisma.${modelName}WhereUniqueInput
+  uniqueWhere: Prisma.${modelName}WhereUniqueInput,
 ): Prisma.${modelName}WhereInput {
   const newUniqueWhere: Prisma.${modelName}WhereInput =
     bringChildKeysToParent(uniqueWhere);
 
-  newUniqueWhere.deletedAt = null;
+  newUniqueWhere.${field} = null;
 
   return newUniqueWhere;
 }
@@ -143,17 +165,47 @@ function generate() {
 function update${modelName}WhereInput(
   where?: Prisma.${modelName}WhereInput,
 ): Prisma.${modelName}WhereInput | undefined {
-  if (!where) return;
+  if (!objectHasKeys(where)) return { ${field}: null };
 
   const newWhere: Prisma.${modelName}WhereInput = {
     ...where,
-    deletedAt: null,
+${relations
+  .filter(rel => rel.type === RelationType.MANY)
+  .map(
+    rel =>
+      `    ${rel.field}: update${rel.modelName}ListRelationFilter(where?.${rel.field})`,
+  )
+  .join(',\n')},
+    ${field}: null,
   };
 
   return newWhere;
 }
 
-`;
+${
+  doesSomeModelHasThisModelInRelations(modelName, RelationType.MANY)
+    ? `function update${modelName}ListRelationFilter(
+  listRelationFilter?: Prisma.${modelName}ListRelationFilter,
+): Prisma.${modelName}ListRelationFilter | undefined {
+  if (!objectHasKeys(listRelationFilter)) return;
+
+  const newListRelationFilter: Prisma.${modelName}ListRelationFilter = {};
+
+  for (const _key in listRelationFilter) {
+    const key = _key as keyof typeof listRelationFilter;
+    const value = listRelationFilter[key];
+
+    if (objectHasKeys(value)) {
+      newListRelationFilter[key] = update${modelName}WhereInput(value);
+    }
+  }
+
+  return newListRelationFilter;
+}
+
+`
+    : ''
+}`;
 
     updateFieldOperations =
       updateFieldOperations +
