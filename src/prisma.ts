@@ -110,6 +110,10 @@ function updateUserXORUserRelationFilterUserWhereInput(
   if (keys.length === 1 && (keys[0] === 'is' || keys[0] === 'isNot')) {
     const key = keys[0];
 
+    if (typeof newFilter[key] !== 'object') {
+      throw new Error(`Provide an object for ${key}`);
+    }
+
     newFilter[key] = updateUserWhereInput(
       filter![key] as Prisma.UserWhereInput,
     );
@@ -168,6 +172,10 @@ function updatePostXORPostRelationFilterPostWhereInput(
 
   if (keys.length === 1 && (keys[0] === 'is' || keys[0] === 'isNot')) {
     const key = keys[0];
+
+    if (typeof newFilter[key] !== 'object') {
+      throw new Error(`Provide an object for ${key}`);
+    }
 
     newFilter[key] = updatePostWhereInput(
       filter![key] as Prisma.PostWhereInput,
@@ -255,6 +263,10 @@ function updateCommentXORCommentRelationFilterCommentWhereInput(
   if (keys.length === 1 && (keys[0] === 'is' || keys[0] === 'isNot')) {
     const key = keys[0];
 
+    if (typeof newFilter[key] !== 'object') {
+      throw new Error(`Provide an object for ${key}`);
+    }
+
     newFilter[key] = updateCommentWhereInput(
       filter![key] as Prisma.CommentWhereInput,
     );
@@ -305,7 +317,7 @@ export default {
       }
 
       if (Object.keys(args.where).length !== 1) {
-        throw new Error('Please give only one argument for findUnique');
+        throw new Error('Give only one argument for findUnique');
       }
 
       return p.user.findFirst({

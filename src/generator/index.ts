@@ -30,6 +30,11 @@ const config: ConfigType = [
     field: 'deletedAt',
     relations: [
       {
+        modelName: 'User',
+        field: 'Author',
+        type: RelationType.ONE,
+      },
+      {
         modelName: 'Comment',
         field: 'Comments',
         type: RelationType.MANY,
@@ -39,7 +44,6 @@ const config: ConfigType = [
         modelName: 'Comment',
         field: 'PinnedComment',
         type: RelationType.ONE,
-        disconnect: true,
       },
     ],
   },
@@ -48,6 +52,27 @@ const config: ConfigType = [
     modelName: 'Comment',
     field: 'deletedAt',
     relations: [
+      {
+        modelName: 'User',
+        field: 'Author',
+        type: RelationType.ONE,
+      },
+      {
+        modelName: 'Post',
+        field: 'Post',
+        type: RelationType.ONE,
+      },
+      {
+        modelName: 'Comment',
+        field: 'ParentComment',
+        type: RelationType.ONE,
+      },
+      {
+        modelName: 'Post',
+        field: 'PinnedInPost',
+        type: RelationType.ONE,
+        disconnect: true,
+      },
       {
         modelName: 'Comment',
         field: 'Replies',
@@ -124,7 +149,7 @@ export default {
   },
 };
 
-function doesSomeModelHasThisModelInRelations(
+function doesSomeModelHasThisModelInRelation(
   modelName: string,
   type: RelationType,
 ) {
@@ -169,13 +194,27 @@ function update${modelName}WhereInput(
 
   const newWhere: Prisma.${modelName}WhereInput = {
     ...where,
-${relations
-  .filter(rel => rel.type === RelationType.MANY)
-  .map(
-    rel =>
-      `    ${rel.field}: update${rel.modelName}ListRelationFilter(where?.${rel.field})`,
-  )
-  .join(',\n')},
+${(() => {
+  const list = relations
+    .filter(rel => rel.type === RelationType.ONE)
+    .map(
+      rel =>
+        `    ${rel.field}: update${rel.modelName}XOR${rel.modelName}RelationFilter${rel.modelName}WhereInput(
+      where?.${rel.field} || undefined
+    )`,
+    );
+
+  return list.length > 0 ? list.join(',\n') + ',\n' : '';
+})()}${(() => {
+        const list = relations
+          .filter(rel => rel.type === RelationType.MANY)
+          .map(
+            rel =>
+              `    ${rel.field}: update${rel.modelName}ListRelationFilter(where?.${rel.field})`,
+          );
+
+        return list.length > 0 ? list.join(',\n') + ',' : '\n';
+      })()}
     ${field}: null,
   };
 
@@ -183,8 +222,44 @@ ${relations
 }
 
 ${
-  doesSomeModelHasThisModelInRelations(modelName, RelationType.MANY)
-    ? `function update${modelName}ListRelationFilter(
+  doesSomeModelHasThisModelInRelation(modelName, RelationType.ONE)
+    ? `function update${modelName}XOR${modelName}RelationFilter${modelName}WhereInput(
+  filter?: Prisma.XOR<Prisma.${modelName}RelationFilter, Prisma.${modelName}WhereInput>,
+): Prisma.XOR<Prisma.${modelName}RelationFilter, Prisma.${modelName}WhereInput> | undefined {
+  if (!objectHasKeys(filter)) return;
+
+  const newFilter: Prisma.XOR<
+    Prisma.${modelName}RelationFilter,
+    Prisma.${modelName}WhereInput
+  > = {};
+
+  const keys = Object.keys(filter!);
+
+  if (keys.length === 1 && (keys[0] === 'is' || keys[0] === 'isNot')) {
+    const key = keys[0];
+
+    if (typeof newFilter[key] !== 'object') {
+      throw new Error(\`Provide an object for \${key}\`);
+    }
+
+    newFilter[key] = update${modelName}WhereInput(
+      filter![key] as Prisma.${modelName}WhereInput,
+    );
+  } else {
+    Object.assign(
+      newFilter,
+      update${modelName}WhereInput(filter as Prisma.${modelName}WhereInput),
+    );
+  }
+
+  return newFilter;
+}
+
+`
+    : ''
+}${
+        doesSomeModelHasThisModelInRelation(modelName, RelationType.MANY)
+          ? `function update${modelName}ListRelationFilter(
   listRelationFilter?: Prisma.${modelName}ListRelationFilter,
 ): Prisma.${modelName}ListRelationFilter | undefined {
   if (!objectHasKeys(listRelationFilter)) return;
@@ -204,8 +279,8 @@ ${
 }
 
 `
-    : ''
-}`;
+          : ''
+      }`;
 
     updateFieldOperations =
       updateFieldOperations +
@@ -219,7 +294,7 @@ ${
       }
 
       if (Object.keys(args.where).length !== 1) {
-        throw new Error('Please give only one argument for findUnique');
+        throw new Error('Give only one argument for findUnique');
       }
 
       return p.${model}.findFirst({
