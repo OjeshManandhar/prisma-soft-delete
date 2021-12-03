@@ -13,6 +13,10 @@ type DeletedExtension = {
  * =========================
  */
 
+function objectHasKeys(obj: object | null | undefined): Boolean {
+  return Boolean(obj && Object.keys(obj).length !== 0);
+}
+
 function bringChildKeysToParent(parent: object) {
   const newParent = {};
 
@@ -29,6 +33,35 @@ function bringChildKeysToParent(parent: object) {
 
   return newParent;
 }
+
+// function updateListRelationFilter<
+//   W extends object | undefined,
+//   T = {
+//     every?: W;
+//     some?: W;
+//     none?: W;
+//   },
+// >(
+//   updateWhereInput: (value?: W) => W | undefined,
+//   listRelationFilter?: T,
+// ): T | undefined {
+//   if (!objectHasKeys(listRelationFilter as unknown as object)) return;
+
+//   const newListRelationFilter = {} as T;
+
+//   for (const _key in listRelationFilter!) {
+//     const key = _key as unknown as keyof T;
+//     const value: W = listRelationFilter[key] as unknown as W;
+
+//     if (objectHasKeys(value)) {
+//       const res = updateWhereInput(value);
+
+//       newListRelationFilter[key] = res || undefined;
+//     }
+//   }
+
+//   return newListRelationFilter as T;
+// }
 
 /**
  * =========================
@@ -50,10 +83,12 @@ function updateUserWhereUniqueInput(
 function updateUserWhereInput(
   where?: Prisma.UserWhereInput,
 ): Prisma.UserWhereInput | undefined {
-  if (!where) return;
+  if (!objectHasKeys(where)) return { deletedAt: null };
 
   const newWhere: Prisma.UserWhereInput = {
     ...where,
+    Posts: updatePostListRelationFilter(where?.Posts),
+    Comments: updateCommentListRelationFilter(where?.Comments),
     deletedAt: null,
   };
 
@@ -74,14 +109,34 @@ function updatePostWhereUniqueInput(
 function updatePostWhereInput(
   where?: Prisma.PostWhereInput,
 ): Prisma.PostWhereInput | undefined {
-  if (!where) return;
+  if (!objectHasKeys(where)) return { deletedAt: null };
 
   const newWhere: Prisma.PostWhereInput = {
     ...where,
+    Comments: updateCommentListRelationFilter(where?.Comments),
     deletedAt: null,
   };
 
   return newWhere;
+}
+
+function updatePostListRelationFilter(
+  listRelationFilter?: Prisma.PostListRelationFilter,
+): Prisma.PostListRelationFilter | undefined {
+  if (!objectHasKeys(listRelationFilter)) return;
+
+  const newListRelationFilter: Prisma.PostListRelationFilter = {};
+
+  for (const _key in listRelationFilter) {
+    const key = _key as keyof typeof listRelationFilter;
+    const value = listRelationFilter[key];
+
+    if (objectHasKeys(value)) {
+      newListRelationFilter[key] = updatePostWhereInput(value);
+    }
+  }
+
+  return newListRelationFilter;
 }
 
 function updateCommentWhereUniqueInput(
@@ -98,14 +153,34 @@ function updateCommentWhereUniqueInput(
 function updateCommentWhereInput(
   where?: Prisma.CommentWhereInput,
 ): Prisma.CommentWhereInput | undefined {
-  if (!where) return;
+  if (!objectHasKeys(where)) return { deletedAt: null };
 
   const newWhere: Prisma.CommentWhereInput = {
     ...where,
+    Replies: updateCommentListRelationFilter(where?.Replies),
     deletedAt: null,
   };
 
   return newWhere;
+}
+
+function updateCommentListRelationFilter(
+  listRelationFilter?: Prisma.CommentListRelationFilter,
+): Prisma.CommentListRelationFilter | undefined {
+  if (!objectHasKeys(listRelationFilter)) return;
+
+  const newListRelationFilter: Prisma.CommentListRelationFilter = {};
+
+  for (const _key in listRelationFilter) {
+    const key = _key as keyof typeof listRelationFilter;
+    const value = listRelationFilter[key];
+
+    if (objectHasKeys(value)) {
+      newListRelationFilter[key] = updateCommentWhereInput(value);
+    }
+  }
+
+  return newListRelationFilter;
 }
 
 /**
@@ -195,6 +270,8 @@ export default {
       if (includeDeleted) {
         return p.post.findMany(args);
       }
+
+      console.log('updatePostWhereInput:', updatePostWhereInput(args.where));
 
       return p.post.findMany({
         ...args,

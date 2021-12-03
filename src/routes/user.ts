@@ -23,16 +23,23 @@ router.get('/:username', async (req, res) => {
   res.send(
     await prisma.user.findMany({
       where: {
-        OR: [
-          {
-            id: '2bd34ec9-54ea-4bdf-ac2e-6cbec6bfe944',
+        username: { contains: username },
+        Posts: {
+          some: {
+            opinion: { contains: 'sarada' },
           },
-          {
-            username: { contains: username },
-          },
-        ],
+        },
       },
-      orderBy: { username: 'asc' },
+      include: {
+        Posts: {
+          select: {
+            id: true,
+            title: true,
+            opinion: true,
+            deletedAt: true,
+          },
+        },
+      },
       includeDeleted: !true,
     }),
   );
