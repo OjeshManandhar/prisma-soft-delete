@@ -2,7 +2,7 @@
 import { Router } from 'express';
 
 // db
-import prisma from '../_prisma';
+import prisma from '../prisma';
 
 const router = Router();
 
@@ -14,6 +14,17 @@ router.post('/', async (req, res) => {
 // list
 router.get('/', async (req, res) => {
   res.send(await prisma.user.findMany({ orderBy: { createdAt: 'asc' } }));
+});
+
+// find
+router.get('/:username', async (req, res) => {
+  const username = req.params.username;
+
+  res.send(
+    await prisma.user.findUnique({
+      where: { username }
+    })
+  );
 });
 
 // update
