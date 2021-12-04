@@ -69,7 +69,7 @@ function bringChildKeysToParent(parent: object) {
  * =========================
  */
 
-function updateUserWhereUniqueInput(
+function updateUserWhereUniqueInputToWhereInput(
   uniqueWhere: Prisma.UserWhereUniqueInput,
 ): Prisma.UserWhereInput {
   const newUniqueWhere: Prisma.UserWhereInput =
@@ -127,7 +127,48 @@ function updateUserXORUserRelationFilterUserWhereInput(
   return newFilter;
 }
 
-function updatePostWhereUniqueInput(
+function updateUserArgs(args: Prisma.UserArgs) {
+  const newArgs: Prisma.UserArgs = {
+    ...args,
+    select: updateUserSelectAndInclude(args.select),
+    include: updateUserSelectAndInclude(args.include),
+  };
+
+  return newArgs;
+}
+
+function updateUserFindFirstAndManyArgs(
+  args: Prisma.UserFindFirstArgs | Prisma.UserFindManyArgs,
+): Prisma.UserFindFirstArgs | Prisma.UserFindManyArgs {
+  const newArgs = {
+    ...args,
+    select: updateUserSelectAndInclude(args.select),
+    include: updateUserSelectAndInclude(args.include),
+    where: updateUserWhereInput(args.where),
+  };
+
+  return newArgs;
+}
+
+function updateUserSelectAndInclude(
+  select?: Prisma.UserSelect | Prisma.UserInclude | null,
+): Prisma.UserSelect | Prisma.UserInclude | null | undefined {
+  if (!select) return select;
+
+  const newSelect = { ...select };
+
+  if (select.Posts && typeof select.Posts === 'object') {
+    newSelect.Posts = updatePostFindFirstAndManyArgs(select.Posts);
+  }
+
+  if (select.Comments && typeof select.Comments === 'object') {
+    newSelect.Comments = updateCommentFindFirstAndManyArgs(select.Comments);
+  }
+
+  return newSelect;
+}
+
+function updatePostWhereUniqueInputToWhereInput(
   uniqueWhere: Prisma.PostWhereUniqueInput,
 ): Prisma.PostWhereInput {
   const newUniqueWhere: Prisma.PostWhereInput =
@@ -209,7 +250,52 @@ function updatePostListRelationFilter(
   return newListRelationFilter;
 }
 
-function updateCommentWhereUniqueInput(
+function updatePostArgs(args: Prisma.PostArgs) {
+  const newArgs: Prisma.PostArgs = {
+    ...args,
+    select: updatePostSelectAndInclude(args.select),
+    include: updatePostSelectAndInclude(args.include),
+  };
+
+  return newArgs;
+}
+
+function updatePostFindFirstAndManyArgs(
+  args: Prisma.PostFindFirstArgs | Prisma.PostFindManyArgs,
+): Prisma.PostFindFirstArgs | Prisma.PostFindManyArgs {
+  const newArgs = {
+    ...args,
+    select: updatePostSelectAndInclude(args.select),
+    include: updatePostSelectAndInclude(args.include),
+    where: updatePostWhereInput(args.where),
+  };
+
+  return newArgs;
+}
+
+function updatePostSelectAndInclude(
+  select?: Prisma.PostSelect | Prisma.PostInclude | null,
+): Prisma.PostSelect | Prisma.PostInclude | null | undefined {
+  if (!select) return select;
+
+  const newSelect = { ...select };
+
+  if (select.Author && typeof select.Author === 'object') {
+    newSelect.Author = updateUserArgs(select.Author);
+  }
+
+  if (select.PinnedComment && typeof select.PinnedComment === 'object') {
+    newSelect.PinnedComment = updateCommentArgs(select.PinnedComment);
+  }
+
+  if (select.Comments && typeof select.Comments === 'object') {
+    newSelect.Comments = updateCommentFindFirstAndManyArgs(select.Comments);
+  }
+
+  return newSelect;
+}
+
+function updateCommentWhereUniqueInputToWhereInput(
   uniqueWhere: Prisma.CommentWhereUniqueInput,
 ): Prisma.CommentWhereInput {
   const newUniqueWhere: Prisma.CommentWhereInput =
@@ -299,6 +385,59 @@ function updateCommentListRelationFilter(
   return newListRelationFilter;
 }
 
+function updateCommentArgs(args: Prisma.CommentArgs) {
+  const newArgs: Prisma.CommentArgs = {
+    ...args,
+    select: updateCommentSelectAndInclude(args.select),
+    include: updateCommentSelectAndInclude(args.include),
+  };
+
+  return newArgs;
+}
+
+function updateCommentFindFirstAndManyArgs(
+  args: Prisma.CommentFindFirstArgs | Prisma.CommentFindManyArgs,
+): Prisma.CommentFindFirstArgs | Prisma.CommentFindManyArgs {
+  const newArgs = {
+    ...args,
+    select: updateCommentSelectAndInclude(args.select),
+    include: updateCommentSelectAndInclude(args.include),
+    where: updateCommentWhereInput(args.where),
+  };
+
+  return newArgs;
+}
+
+function updateCommentSelectAndInclude(
+  select?: Prisma.CommentSelect | Prisma.CommentInclude | null,
+): Prisma.CommentSelect | Prisma.CommentInclude | null | undefined {
+  if (!select) return select;
+
+  const newSelect = { ...select };
+
+  if (select.Author && typeof select.Author === 'object') {
+    newSelect.Author = updateUserArgs(select.Author);
+  }
+
+  if (select.Post && typeof select.Post === 'object') {
+    newSelect.Post = updatePostArgs(select.Post);
+  }
+
+  if (select.ParentComment && typeof select.ParentComment === 'object') {
+    newSelect.ParentComment = updateCommentArgs(select.ParentComment);
+  }
+
+  if (select.PinnedInPost && typeof select.PinnedInPost === 'object') {
+    newSelect.PinnedInPost = updatePostArgs(select.PinnedInPost);
+  }
+
+  if (select.Replies && typeof select.Replies === 'object') {
+    newSelect.Replies = updateCommentFindFirstAndManyArgs(select.Replies);
+  }
+
+  return newSelect;
+}
+
 /**
  * =========================
  * update field operations
@@ -322,7 +461,7 @@ export default {
 
       return p.user.findFirst({
         ...args,
-        where: updateUserWhereUniqueInput(args.where),
+        where: updateUserWhereUniqueInputToWhereInput(args.where),
       });
     },
     findFirst(_args: Prisma.UserFindFirstArgs & DeletedExtension) {
@@ -332,10 +471,7 @@ export default {
         return p.user.findFirst(args);
       }
 
-      return p.user.findFirst({
-        ...args,
-        where: updateUserWhereInput(args.where),
-      });
+      return p.user.findFirst(updateUserFindFirstAndManyArgs(args));
     },
     findMany(_args: Prisma.UserFindManyArgs & DeletedExtension) {
       const { includeDeleted, ...args } = _args;
@@ -344,10 +480,7 @@ export default {
         return p.user.findMany(args);
       }
 
-      return p.user.findMany({
-        ...args,
-        where: updateUserWhereInput(args.where),
-      });
+      return p.user.findMany(updateUserFindFirstAndManyArgs(args));
     },
   },
   post: {
@@ -365,7 +498,7 @@ export default {
 
       return p.post.findFirst({
         ...args,
-        where: updatePostWhereUniqueInput(args.where),
+        where: updatePostWhereUniqueInputToWhereInput(args.where),
       });
     },
     findFirst(_args: Prisma.PostFindFirstArgs & DeletedExtension) {
@@ -375,10 +508,7 @@ export default {
         return p.post.findFirst(args);
       }
 
-      return p.post.findFirst({
-        ...args,
-        where: updatePostWhereInput(args.where),
-      });
+      return p.post.findFirst(updatePostFindFirstAndManyArgs(args));
     },
     findMany(_args: Prisma.PostFindManyArgs & DeletedExtension) {
       const { includeDeleted, ...args } = _args;
@@ -387,12 +517,7 @@ export default {
         return p.post.findMany(args);
       }
 
-      console.log('updatePostWhereInput:', updatePostWhereInput(args.where));
-
-      return p.post.findMany({
-        ...args,
-        where: updatePostWhereInput(args.where),
-      });
+      return p.post.findMany(updatePostFindFirstAndManyArgs(args));
     },
   },
   comment: {
@@ -410,7 +535,7 @@ export default {
 
       return p.comment.findFirst({
         ...args,
-        where: updateCommentWhereUniqueInput(args.where),
+        where: updateCommentWhereUniqueInputToWhereInput(args.where),
       });
     },
     findFirst(_args: Prisma.CommentFindFirstArgs & DeletedExtension) {
@@ -420,10 +545,7 @@ export default {
         return p.comment.findFirst(args);
       }
 
-      return p.comment.findFirst({
-        ...args,
-        where: updateCommentWhereInput(args.where),
-      });
+      return p.comment.findFirst(updateCommentFindFirstAndManyArgs(args));
     },
     findMany(_args: Prisma.CommentFindManyArgs & DeletedExtension) {
       const { includeDeleted, ...args } = _args;
@@ -432,10 +554,7 @@ export default {
         return p.comment.findMany(args);
       }
 
-      return p.comment.findMany({
-        ...args,
-        where: updateCommentWhereInput(args.where),
-      });
+      return p.comment.findMany(updateCommentFindFirstAndManyArgs(args));
     },
   },
 };

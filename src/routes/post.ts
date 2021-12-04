@@ -42,17 +42,21 @@ router.get('/:opinion', async (req, res) => {
 
   res.send(
     await prisma.post.findMany({
-      where: {
-        // opinion: { contains: opinion },
-        PinnedComment: {
-          is: { is: 'COMMENT' },
-          // is: 'COMMENT',
-        },
-        // Author: {
-        //   username: { contains: opinion },
-        // },
-      },
-      include: {
+      // where: {
+      //   // opinion: { contains: opinion },
+      //   // PinnedComment: {
+      //   //   is: { is: 'COMMENT' },
+      //   //   // is: 'COMMENT',
+      //   // },
+      //   // Author: {
+      //   //   username: { contains: opinion },
+      //   // },
+      // },
+      select: {
+        id: true,
+        title: true,
+        opinion: true,
+        deletedAt: true,
         Author: {
           select: {
             username: true,
