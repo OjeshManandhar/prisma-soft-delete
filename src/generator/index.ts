@@ -36,14 +36,14 @@ const config: ConfigType = [
       },
       {
         modelName: 'Comment',
-        field: 'Comments',
-        type: RelationType.MANY,
-        delete: true,
+        field: 'PinnedComment',
+        type: RelationType.ONE,
       },
       {
         modelName: 'Comment',
-        field: 'PinnedComment',
-        type: RelationType.ONE,
+        field: 'Comments',
+        type: RelationType.MANY,
+        delete: true,
       },
     ],
   },
@@ -95,32 +95,32 @@ type DeletedExtension = {
 
 `,
 
-  utils: `  /**
-   * =========================
-   * utils
-   * =========================
-   */
-  
-  function objectHasKeys(obj: object | null | undefined): Boolean {
-    return Boolean(obj && Object.keys(obj).length !== 0);
-  }
-  
-  function bringChildKeysToParent(parent: object) {
-    const newParent = {};
-  
-    for (const _key in parent) {
-      const key = _key as keyof typeof parent;
-      const value = parent[key];
-  
-      if (typeof value !== 'object') {
-        newParent[key] = parent[key];
-      } else {
-        Object.assign(newParent, bringChildKeysToParent(parent[key]));
-      }
+  utils: `/**
+ * =========================
+ * utils
+ * =========================
+ */
+
+function objectHasKeys(obj: object | null | undefined): Boolean {
+  return Boolean(obj && Object.keys(obj).length !== 0);
+}
+
+function bringChildKeysToParent(parent: object) {
+  const newParent = {};
+
+  for (const _key in parent) {
+    const key = _key as keyof typeof parent;
+    const value = parent[key];
+
+    if (typeof value !== 'object') {
+      newParent[key] = parent[key];
+    } else {
+      Object.assign(newParent, bringChildKeysToParent(parent[key]));
     }
-  
-    return newParent;
   }
+
+  return newParent;
+}
 
 `,
 
@@ -176,7 +176,7 @@ function generate() {
 
     updateFieldValueFunctions =
       updateFieldValueFunctions +
-      `function update${modelName}WhereUniqueInput(
+      `function update${modelName}WhereUniqueInputToWhereInput(
   uniqueWhere: Prisma.${modelName}WhereUniqueInput,
 ): Prisma.${modelName}WhereInput {
   const newUniqueWhere: Prisma.${modelName}WhereInput =
@@ -280,7 +280,55 @@ ${
 
 `
           : ''
-      }`;
+      }function update${modelName}Args(args: Prisma.${modelName}Args) {
+  const newArgs: Prisma.${modelName}Args = {
+    ...args,
+    select: update${modelName}SelectAndInclude(args.select),
+    include: update${modelName}SelectAndInclude(args.include),
+  };
+
+  return newArgs;
+}
+
+function update${modelName}FindFirstAndManyArgs(
+  args: Prisma.${modelName}FindFirstArgs | Prisma.${modelName}FindManyArgs,
+): Prisma.${modelName}FindFirstArgs | Prisma.${modelName}FindManyArgs {
+  const newArgs = {
+    ...args,
+    select: update${modelName}SelectAndInclude(args.select),
+    include: update${modelName}SelectAndInclude(args.include),
+    where: update${modelName}WhereInput(args.where),
+  };
+
+  return newArgs;
+}
+
+function update${modelName}SelectAndInclude(
+  select?: Prisma.${modelName}Select | Prisma.${modelName}Include | null,
+): Prisma.${modelName}Select | Prisma.${modelName}Include | null | undefined {
+  if (!select) return select;
+
+  const newSelect = { ...select };
+  ${relations
+    .map(rel => {
+      if (rel.type === RelationType.ONE) {
+        return `
+  if (select.${rel.field} && typeof select.${rel.field} === 'object') {
+    newSelect.${rel.field} = update${rel.modelName}Args(select.${rel.field});
+  }`;
+      }
+
+      return `
+  if (select.${rel.field} && typeof select.${rel.field} === 'object') {
+    newSelect.${rel.field} = update${rel.modelName}FindFirstAndManyArgs(select.${rel.field});
+  }`;
+    })
+    .join('\n')}
+
+  return newSelect;
+}
+
+`;
 
     updateFieldOperations =
       updateFieldOperations +
@@ -299,7 +347,7 @@ ${
 
       return p.${model}.findFirst({
         ...args,
-        where: update${modelName}WhereUniqueInput(args.where),
+        where: update${modelName}WhereUniqueInputToWhereInput(args.where),
       });
     },
     findFirst(_args: Prisma.${modelName}FindFirstArgs & DeletedExtension) {
@@ -309,10 +357,7 @@ ${
         return p.${model}.findFirst(args);
       }
 
-      return p.${model}.findFirst({
-        ...args,
-        where: update${modelName}WhereInput(args.where),
-      });
+      return p.${model}.findFirst(update${modelName}FindFirstAndManyArgs(args));
     },
     findMany(_args: Prisma.${modelName}FindManyArgs & DeletedExtension) {
       const { includeDeleted, ...args } = _args;
@@ -321,10 +366,7 @@ ${
         return p.${model}.findMany(args);
       }
 
-      return p.${model}.findMany({
-        ...args,
-        where: update${modelName}WhereInput(args.where),
-      });
+      return p.${model}.findMany(update${modelName}FindFirstAndManyArgs(args));
     }
   },
     `;
