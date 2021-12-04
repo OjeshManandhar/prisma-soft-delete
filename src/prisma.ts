@@ -110,7 +110,7 @@ function updateUserXORUserRelationFilterUserWhereInput(
   if (keys.length === 1 && (keys[0] === 'is' || keys[0] === 'isNot')) {
     const key = keys[0];
 
-    if (typeof newFilter[key] !== 'object') {
+    if (typeof filter![key] !== 'object') {
       throw new Error(`Provide an object for ${key}`);
     }
 
@@ -173,7 +173,7 @@ function updatePostXORPostRelationFilterPostWhereInput(
   if (keys.length === 1 && (keys[0] === 'is' || keys[0] === 'isNot')) {
     const key = keys[0];
 
-    if (typeof newFilter[key] !== 'object') {
+    if (typeof filter![key] !== 'object') {
       throw new Error(`Provide an object for ${key}`);
     }
 
@@ -263,7 +263,7 @@ function updateCommentXORCommentRelationFilterCommentWhereInput(
   if (keys.length === 1 && (keys[0] === 'is' || keys[0] === 'isNot')) {
     const key = keys[0];
 
-    if (typeof newFilter[key] !== 'object') {
+    if (typeof filter![key] !== 'object') {
       throw new Error(`Provide an object for ${key}`);
     }
 
