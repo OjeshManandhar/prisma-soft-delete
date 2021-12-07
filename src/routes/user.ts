@@ -51,6 +51,7 @@ router.put('/:id', async (req, res) => {
     await prisma.user.update({
       where: { id: req.params.id },
       data: req.body,
+      // includeDeleted: true,
     }),
   );
 });

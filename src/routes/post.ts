@@ -106,6 +106,7 @@ router.put('/:id', async (req, res) => {
     await prisma.post.update({
       where: { id: req.params.id },
       data: req.body,
+      includeDeleted: true,
     }),
   );
 });
