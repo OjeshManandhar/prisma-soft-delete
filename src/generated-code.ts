@@ -158,10 +158,10 @@ function updatePostWhereInput(
   const newWhere: Prisma.PostWhereInput = {
     ...where,
     Author: updateUserXORUserRelationFilterUserWhereInput(
-      where?.Author || undefined
+      where?.Author || undefined,
     ),
     PinnedComment: updateCommentXORCommentRelationFilterCommentWhereInput(
-      where?.PinnedComment || undefined
+      where?.PinnedComment || undefined,
     ),
     Comments: updateCommentListRelationFilter(where?.Comments),
     deletedAt: null,
@@ -285,16 +285,16 @@ function updateCommentWhereInput(
   const newWhere: Prisma.CommentWhereInput = {
     ...where,
     Author: updateUserXORUserRelationFilterUserWhereInput(
-      where?.Author || undefined
+      where?.Author || undefined,
     ),
     Post: updatePostXORPostRelationFilterPostWhereInput(
-      where?.Post || undefined
+      where?.Post || undefined,
     ),
     ParentComment: updateCommentXORCommentRelationFilterCommentWhereInput(
-      where?.ParentComment || undefined
+      where?.ParentComment || undefined,
     ),
     PinnedInPost: updatePostXORPostRelationFilterPostWhereInput(
-      where?.PinnedInPost || undefined
+      where?.PinnedInPost || undefined,
     ),
     Replies: updateCommentListRelationFilter(where?.Replies),
     deletedAt: null,
@@ -450,7 +450,39 @@ export default {
       }
 
       return p.user.findMany(updateUserFindFirstAndManyArgs(args));
-    }
+    },
+    async update(_args: Prisma.UserUpdateArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.user.update(args);
+      }
+
+      const foundUser = await p.user.findUnique({
+        where: args.where,
+        rejectOnNotFound: false,
+      });
+
+      if (foundUser?.deletedAt) {
+        throw new Error('User to update not found');
+      }
+
+      // TODO check if data has connected a deleted record or not
+
+      if (args.select) {
+        args.select = updateUserSelectAndInclude(
+          args.select,
+        ) as Prisma.UserSelect;
+      }
+
+      if (args.include) {
+        args.include = updateUserSelectAndInclude(
+          args.include,
+        ) as Prisma.UserInclude;
+      }
+
+      return p.user.update(args);
+    },
   },
       post: {
     ...p.post,
@@ -487,7 +519,39 @@ export default {
       }
 
       return p.post.findMany(updatePostFindFirstAndManyArgs(args));
-    }
+    },
+    async update(_args: Prisma.PostUpdateArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.post.update(args);
+      }
+
+      const foundPost = await p.post.findUnique({
+        where: args.where,
+        rejectOnNotFound: false,
+      });
+
+      if (foundPost?.deletedAt) {
+        throw new Error('Post to update not found');
+      }
+
+      // TODO check if data has connected a deleted record or not
+
+      if (args.select) {
+        args.select = updatePostSelectAndInclude(
+          args.select,
+        ) as Prisma.PostSelect;
+      }
+
+      if (args.include) {
+        args.include = updatePostSelectAndInclude(
+          args.include,
+        ) as Prisma.PostInclude;
+      }
+
+      return p.post.update(args);
+    },
   },
       comment: {
     ...p.comment,
@@ -524,7 +588,39 @@ export default {
       }
 
       return p.comment.findMany(updateCommentFindFirstAndManyArgs(args));
-    }
+    },
+    async update(_args: Prisma.CommentUpdateArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.comment.update(args);
+      }
+
+      const foundComment = await p.comment.findUnique({
+        where: args.where,
+        rejectOnNotFound: false,
+      });
+
+      if (foundComment?.deletedAt) {
+        throw new Error('Comment to update not found');
+      }
+
+      // TODO check if data has connected a deleted record or not
+
+      if (args.select) {
+        args.select = updateCommentSelectAndInclude(
+          args.select,
+        ) as Prisma.CommentSelect;
+      }
+
+      if (args.include) {
+        args.include = updateCommentSelectAndInclude(
+          args.include,
+        ) as Prisma.CommentInclude;
+      }
+
+      return p.comment.update(args);
+    },
   },
     
 };

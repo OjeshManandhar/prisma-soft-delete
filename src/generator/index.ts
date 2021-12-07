@@ -200,7 +200,7 @@ ${(() => {
     .map(
       rel =>
         `    ${rel.field}: update${rel.modelName}XOR${rel.modelName}RelationFilter${rel.modelName}WhereInput(
-      where?.${rel.field} || undefined
+      where?.${rel.field} || undefined,
     )`,
     );
 
@@ -367,7 +367,39 @@ function update${modelName}SelectAndInclude(
       }
 
       return p.${model}.findMany(update${modelName}FindFirstAndManyArgs(args));
-    }
+    },
+    async update(_args: Prisma.${modelName}UpdateArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.${model}.update(args);
+      }
+
+      const found${modelName} = await p.${model}.findUnique({
+        where: args.where,
+        rejectOnNotFound: false,
+      });
+
+      if (found${modelName}?.${field}) {
+        throw new Error('${modelName} to update not found');
+      }
+
+      // TODO check if data has connected a deleted record or not
+
+      if (args.select) {
+        args.select = update${modelName}SelectAndInclude(
+          args.select,
+        ) as Prisma.${modelName}Select;
+      }
+
+      if (args.include) {
+        args.include = update${modelName}SelectAndInclude(
+          args.include,
+        ) as Prisma.${modelName}Include;
+      }
+
+      return p.${model}.update(args);
+    },
   },
     `;
   }
