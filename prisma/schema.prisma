@@ -16,6 +16,7 @@ model User {
   username String @unique
   name     String
   gender   String
+  age      Int
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
