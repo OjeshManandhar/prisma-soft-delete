@@ -140,12 +140,11 @@ function bringChildKeysToParent(parent: object) {
  */
 
 export default {
-  ...p,
-  `,
+  ...p,`,
 
     end: `
 };
-  `,
+`,
   },
 };
 
@@ -332,7 +331,8 @@ function update${modelName}SelectAndInclude(
 
     updateFieldOperations =
       updateFieldOperations +
-      `  ${model}: {
+      `
+  ${model}: {
     ...p.${model},
     findUnique(_args: Prisma.${modelName}FindUniqueArgs & DeletedExtension) {
       const { includeDeleted, ...args } = _args;
@@ -400,8 +400,19 @@ function update${modelName}SelectAndInclude(
 
       return p.${model}.update(args);
     },
-  },
-    `;
+    updateMany(_args: Prisma.${modelName}UpdateManyArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.${model}.updateMany(args);
+      }
+
+      return p.${model}.updateMany({
+        ...args,
+        where: update${modelName}WhereInput(args.where),
+      });
+    },
+  },`;
   }
 
   generatedFileContent +=
