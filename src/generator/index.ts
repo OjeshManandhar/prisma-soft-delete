@@ -465,6 +465,18 @@ function update${modelName}SelectAndInclude(
         where: update${modelName}WhereInput(args.where),
       });
     },
+    aggregate(_args: Prisma.${modelName}AggregateArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.${model}.aggregate(args);
+      }
+
+      return p.${model}.aggregate({
+        ...args,
+        where: update${modelName}WhereInput(args.where),
+      });
+    },
   },`;
   }
 

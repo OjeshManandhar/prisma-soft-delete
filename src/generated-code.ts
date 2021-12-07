@@ -548,6 +548,18 @@ export default {
         where: updateUserWhereInput(args.where),
       });
     },
+    aggregate(_args: Prisma.UserAggregateArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.user.aggregate(args);
+      }
+
+      return p.user.aggregate({
+        ...args,
+        where: updateUserWhereInput(args.where),
+      });
+    },
   },
   post: {
     ...p.post,
@@ -678,6 +690,18 @@ export default {
         where: updatePostWhereInput(args.where),
       });
     },
+    aggregate(_args: Prisma.PostAggregateArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.post.aggregate(args);
+      }
+
+      return p.post.aggregate({
+        ...args,
+        where: updatePostWhereInput(args.where),
+      });
+    },
   },
   comment: {
     ...p.comment,
@@ -804,6 +828,18 @@ export default {
       }
 
       return p.comment.count({
+        ...args,
+        where: updateCommentWhereInput(args.where),
+      });
+    },
+    aggregate(_args: Prisma.CommentAggregateArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.comment.aggregate(args);
+      }
+
+      return p.comment.aggregate({
         ...args,
         where: updateCommentWhereInput(args.where),
       });
