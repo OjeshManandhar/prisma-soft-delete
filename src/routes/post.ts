@@ -40,6 +40,16 @@ router.get('/', async (req, res) => {
 router.get('/:opinion', async (req, res) => {
   const opinion = req.params.opinion;
 
+  res.send({
+    count: await prisma.post.count({
+      where: { opinion: { contains: opinion } },
+      take: 10,
+      includeDeleted: true,
+    }),
+  });
+
+  return;
+
   res.send(
     await prisma.post.findMany({
       where: {
