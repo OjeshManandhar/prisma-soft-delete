@@ -93,6 +93,10 @@ type DeletedExtension = {
   includeDeleted?: Boolean;
 };
 
+type HardDeleteExtension = {
+  hardDelete?: Boolean;
+};
+
 `,
 
   utils: `/**
@@ -410,6 +414,43 @@ function update${modelName}SelectAndInclude(
       return p.${model}.updateMany({
         ...args,
         where: update${modelName}WhereInput(args.where),
+      });
+    },
+    async delete(_args: Prisma.${modelName}DeleteArgs & HardDeleteExtension) {
+      const { hardDelete, ...args } = _args;
+
+      if (hardDelete) {
+        return p.${model}.delete(args);
+      }
+
+      const found${modelName} = await p.${model}.findUnique({
+        where: args.where,
+        rejectOnNotFound: false,
+      });
+
+      if (found${modelName} && found${modelName}.${field}) {
+        throw new Error('${modelName} to delete not found');
+      }
+
+      // TODO Cascade delete and/or disconnect
+
+      return p.${model}.update({
+        where: args.where,
+        data: { ${field}: new Date() },
+      });
+    },
+    deleteMany(_args: Prisma.${modelName}DeleteManyArgs & HardDeleteExtension) {
+      const { hardDelete, ...args } = _args;
+
+      if (hardDelete) {
+        return p.${model}.deleteMany(args);
+      }
+
+      // TODO Cascade delete and/or disconnect
+
+      return p.${model}.updateMany({
+        where: update${modelName}WhereInput(args.where),
+        data: { ${field}: new Date() },
       });
     },
   },`;
