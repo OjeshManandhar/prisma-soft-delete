@@ -485,6 +485,18 @@ export default {
 
       return p.user.update(args);
     },
+    updateMany(_args: Prisma.UserUpdateManyArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.user.updateMany(args);
+      }
+
+      return p.user.updateMany({
+        ...args,
+        where: updateUserWhereInput(args.where),
+      });
+    },
   },
   post: {
     ...p.post,
@@ -554,6 +566,18 @@ export default {
 
       return p.post.update(args);
     },
+    updateMany(_args: Prisma.PostUpdateManyArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.post.updateMany(args);
+      }
+
+      return p.post.updateMany({
+        ...args,
+        where: updatePostWhereInput(args.where),
+      });
+    },
   },
   comment: {
     ...p.comment,
@@ -622,6 +646,18 @@ export default {
       }
 
       return p.comment.update(args);
+    },
+    updateMany(_args: Prisma.CommentUpdateManyArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.comment.updateMany(args);
+      }
+
+      return p.comment.updateMany({
+        ...args,
+        where: updateCommentWhereInput(args.where),
+      });
     },
   },
 };

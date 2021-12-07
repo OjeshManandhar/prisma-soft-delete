@@ -47,11 +47,26 @@ router.get('/:username', async (req, res) => {
 
 // update
 router.put('/:id', async (req, res) => {
+  // res.send(
+  //   await prisma.user.update({
+  //     where: { id: req.params.id },
+  //     data: req.body,
+  //     // includeDeleted: true,
+  //   }),
+  // );
+
   res.send(
-    await prisma.user.update({
-      where: { id: req.params.id },
-      data: req.body,
-      // includeDeleted: true,
+    await prisma.user.updateMany({
+      where: {
+        username: { contains: 'sa' },
+        NOT: { username: 'saitama' },
+      },
+      data: {
+        gender: {
+          set: 'NINJA',
+        },
+      },
+      includeDeleted: true,
     }),
   );
 });
