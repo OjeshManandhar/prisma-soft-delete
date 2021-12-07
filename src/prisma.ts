@@ -7,6 +7,10 @@ type DeletedExtension = {
   includeDeleted?: Boolean;
 };
 
+type HardDeleteExtension = {
+  hardDelete?: Boolean;
+};
+
 /**
  * =========================
  * utils
@@ -497,6 +501,43 @@ export default {
         where: updateUserWhereInput(args.where),
       });
     },
+    async delete(_args: Prisma.UserDeleteArgs & HardDeleteExtension) {
+      const { hardDelete, ...args } = _args;
+
+      if (hardDelete) {
+        return p.user.delete(args);
+      }
+
+      const foundUser = await p.user.findUnique({
+        where: args.where,
+        rejectOnNotFound: false,
+      });
+
+      if (foundUser && foundUser.deletedAt) {
+        throw new Error('User to delete not found');
+      }
+
+      // TODO Cascade delete and/or disconnect
+
+      return p.user.update({
+        where: args.where,
+        data: { deletedAt: new Date() },
+      });
+    },
+    deleteMany(_args: Prisma.UserDeleteManyArgs & HardDeleteExtension) {
+      const { hardDelete, ...args } = _args;
+
+      if (hardDelete) {
+        return p.user.deleteMany(args);
+      }
+
+      // TODO Cascade delete and/or disconnect
+
+      return p.user.updateMany({
+        where: updateUserWhereInput(args.where),
+        data: { deletedAt: new Date() },
+      });
+    },
   },
   post: {
     ...p.post,
@@ -578,6 +619,43 @@ export default {
         where: updatePostWhereInput(args.where),
       });
     },
+    async delete(_args: Prisma.PostDeleteArgs & HardDeleteExtension) {
+      const { hardDelete, ...args } = _args;
+
+      if (hardDelete) {
+        return p.post.delete(args);
+      }
+
+      const foundPost = await p.post.findUnique({
+        where: args.where,
+        rejectOnNotFound: false,
+      });
+
+      if (foundPost && foundPost.deletedAt) {
+        throw new Error('Post to delete not found');
+      }
+
+      // TODO Cascade delete and/or disconnect
+
+      return p.post.update({
+        where: args.where,
+        data: { deletedAt: new Date() },
+      });
+    },
+    deleteMany(_args: Prisma.PostDeleteManyArgs & HardDeleteExtension) {
+      const { hardDelete, ...args } = _args;
+
+      if (hardDelete) {
+        return p.post.deleteMany(args);
+      }
+
+      // TODO Cascade delete and/or disconnect
+
+      return p.post.updateMany({
+        where: updatePostWhereInput(args.where),
+        data: { deletedAt: new Date() },
+      });
+    },
   },
   comment: {
     ...p.comment,
@@ -657,6 +735,43 @@ export default {
       return p.comment.updateMany({
         ...args,
         where: updateCommentWhereInput(args.where),
+      });
+    },
+    async delete(_args: Prisma.CommentDeleteArgs & HardDeleteExtension) {
+      const { hardDelete, ...args } = _args;
+
+      if (hardDelete) {
+        return p.comment.delete(args);
+      }
+
+      const foundComment = await p.comment.findUnique({
+        where: args.where,
+        rejectOnNotFound: false,
+      });
+
+      if (foundComment && foundComment.deletedAt) {
+        throw new Error('Comment to delete not found');
+      }
+
+      // TODO Cascade delete and/or disconnect
+
+      return p.comment.update({
+        where: args.where,
+        data: { deletedAt: new Date() },
+      });
+    },
+    deleteMany(_args: Prisma.CommentDeleteManyArgs & HardDeleteExtension) {
+      const { hardDelete, ...args } = _args;
+
+      if (hardDelete) {
+        return p.comment.deleteMany(args);
+      }
+
+      // TODO Cascade delete and/or disconnect
+
+      return p.comment.updateMany({
+        where: updateCommentWhereInput(args.where),
+        data: { deletedAt: new Date() },
       });
     },
   },

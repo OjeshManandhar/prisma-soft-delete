@@ -73,7 +73,12 @@ router.put('/:id', async (req, res) => {
 
 // delete
 router.delete('/:id', async (req, res) => {
-  res.send(await prisma.user.delete({ where: { id: req.params.id } }));
+  res.send(
+    await prisma.user.deleteMany({
+      where: { username: { contains: 'test' } },
+      hardDelete: true,
+    }),
+  );
 });
 
 export default router;
