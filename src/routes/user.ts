@@ -20,6 +20,20 @@ router.get('/', async (req, res) => {
 router.get('/:username', async (req, res) => {
   const username = req.params.username;
 
+  res.send({
+    aggregate: await prisma.user.aggregate({
+      _avg: { age: true },
+      _max: { age: true },
+      _min: { age: true },
+      _sum: { age: true },
+      _count: { age: true },
+      where: { username: { contains: username } },
+      includeDeleted: true,
+    }),
+  });
+
+  return;
+
   res.send(
     await prisma.user.findMany({
       where: {
@@ -74,9 +88,9 @@ router.put('/:id', async (req, res) => {
 // delete
 router.delete('/:id', async (req, res) => {
   res.send(
-    await prisma.user.deleteMany({
-      where: { username: { contains: 'test' } },
-      hardDelete: true,
+    await prisma.user.delete({
+      where: { id: req.params.id },
+      hardDelete: !true,
     }),
   );
 });
