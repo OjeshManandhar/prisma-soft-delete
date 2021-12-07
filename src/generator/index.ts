@@ -453,6 +453,18 @@ function update${modelName}SelectAndInclude(
         data: { ${field}: new Date() },
       });
     },
+    count(_args: Prisma.${modelName}CountArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.${model}.count(args);
+      }
+
+      return p.${model}.count({
+        ...args,
+        where: update${modelName}WhereInput(args.where),
+      });
+    },
   },`;
   }
 

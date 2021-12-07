@@ -536,6 +536,18 @@ export default {
         data: { deletedAt: new Date() },
       });
     },
+    count(_args: Prisma.UserCountArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.user.count(args);
+      }
+
+      return p.user.count({
+        ...args,
+        where: updateUserWhereInput(args.where),
+      });
+    },
   },
   post: {
     ...p.post,
@@ -654,6 +666,18 @@ export default {
         data: { deletedAt: new Date() },
       });
     },
+    count(_args: Prisma.PostCountArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.post.count(args);
+      }
+
+      return p.post.count({
+        ...args,
+        where: updatePostWhereInput(args.where),
+      });
+    },
   },
   comment: {
     ...p.comment,
@@ -770,6 +794,18 @@ export default {
       return p.comment.updateMany({
         where: updateCommentWhereInput(args.where),
         data: { deletedAt: new Date() },
+      });
+    },
+    count(_args: Prisma.CommentCountArgs & DeletedExtension) {
+      const { includeDeleted, ...args } = _args;
+
+      if (includeDeleted) {
+        return p.comment.count(args);
+      }
+
+      return p.comment.count({
+        ...args,
+        where: updateCommentWhereInput(args.where),
       });
     },
   },
